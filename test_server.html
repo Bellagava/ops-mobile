@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste do Servidor</title>
+</head>
+<body>
+    <h1>Teste de Conexão com o Servidor</h1>
+    <button onclick="testarConexao()">Testar Conexão</button>
+    <button onclick="testarOcorrencia()">Testar Envio de Ocorrência</button>
+    <div id="resultado"></div>
+
+    <script>
+        async function testarConexao() {
+            const resultado = document.getElementById('resultado');
+            try {
+                const response = await fetch('http://localhost:3000/localidade/findAll');
+                if (response.ok) {
+                    const data = await response.json();
+                    resultado.innerHTML = `<p style="color: green;">✅ Servidor funcionando! Localidades: ${data.length}</p>`;
+                } else {
+                    resultado.innerHTML = `<p style="color: red;">❌ Erro: ${response.status}</p>`;
+                }
+            } catch (error) {
+                resultado.innerHTML = `<p style="color: red;">❌ Erro de conexão: ${error.message}</p>`;
+            }
+        }
+
+        async function testarOcorrencia() {
+            const resultado = document.getElementById('resultado');
+            try {
+                const response = await fetch('http://localhost:3000/ocorrencia/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        localidade_id: 1,
+                        descricao: 'Teste do navegador',
+                        statusOcorrencia: 'ABERTA',
+                        usuario_id: 1
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultado.innerHTML = `<p style="color: green;">✅ Ocorrência criada com sucesso! ID: ${data.id}</p>`;
+                } else {
+                    const errorText = await response.text();
+                    resultado.innerHTML = `<p style="color: red;">❌ Erro ao criar ocorrência: ${response.status} - ${errorText}</p>`;
+                }
+            } catch (error) {
+                resultado.innerHTML = `<p style="color: red;">❌ Erro de conexão: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -96,4 +96,27 @@ class OcorrenciaService {
       throw Exception('Erro ao marcar ocorrência como resolvida');
     }
   }
+
+  Future<void> deletar(int id) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/$id'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Erro ao deletar ocorrência: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  /// Busca ocorrências de um usuário específico
+  Future<List<Map<String, dynamic>>> getOcorrenciasDoUsuario(int userId) async {
+    final response = await http.get(Uri.parse('http://localhost:8080/usuario/$userId/ocorrencias'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Erro ao carregar ocorrências do usuário');
+    }
+  }
 }

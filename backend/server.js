@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
-const PORT = 3000;
+const PORT = 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -40,7 +40,30 @@ app.post('/api/auth/login', (req, res) => {
     const validPassword = await bcrypt.compare(senha, user.senha);
     if (!validPassword) return res.status(401).json({ error: 'Senha incorreta' });
     
-    res.json({ message: 'Login realizado com sucesso', rm: user.rm });
+    res.json({ 
+      message: 'Login realizado com sucesso', 
+      id: user.id,
+      rm: user.rm 
+    });
+  });
+});
+
+// Rota para login de usuário (compatibilidade)
+app.post('/usuario/login', (req, res) => {
+  const { rm, senha } = req.body;
+  
+  db.get('SELECT * FROM users WHERE rm = ?', [rm], async (err, user) => {
+    if (err) return res.status(500).json({ error: 'Erro no servidor' });
+    if (!user) return res.status(401).json({ error: 'RM não encontrado' });
+    
+    const validPassword = await bcrypt.compare(senha, user.senha);
+    if (!validPassword) return res.status(401).json({ error: 'Senha incorreta' });
+    
+    res.json({ 
+      message: 'Login realizado com sucesso', 
+      id: user.id,
+      rm: user.rm 
+    });
   });
 });
 
@@ -91,6 +114,33 @@ app.get('/localidade/findAll', (req, res) => {
 });
 
 // Rota para salvar ocorrência
+app.post('/ocorrencia', (req, res) => {
+  const { localidade_id, descricao, statusOcorrencia, usuario_id } = req.body;
+  
+  console.log('Dados recebidos:', { localidade_id, descricao, statusOcorrencia, usuario_id });
+  
+  if (!localidade_id || !descricao || !statusOcorrencia || !usuario_id) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  }
+  
+  db.run(
+    'INSERT INTO Ocorrencia (localidade_id, descricao, statusOcorrencia, usuario_id) VALUES (?, ?, ?, ?)',
+    [localidade_id, descricao, statusOcorrencia, usuario_id],
+    function(err) {
+      if (err) {
+        console.error('Erro ao inserir ocorrência:', err);
+        return res.status(500).json({ error: 'Erro ao salvar ocorrência' });
+      }
+      console.log('Ocorrência salva com sucesso, ID:', this.lastID);
+      res.status(201).json({ 
+        message: 'Ocorrência criada com sucesso',
+        id: this.lastID 
+      });
+    }
+  );
+});
+
+// Rota para salvar ocorrência (compatibilidade)
 app.post('/ocorrencia/save', (req, res) => {
   const { localidade_id, descricao, statusOcorrencia, usuario_id } = req.body;
   
@@ -115,6 +165,39 @@ app.post('/ocorrencia/save', (req, res) => {
       });
     }
   );
+});
+
+// Rota para buscar ocorrências de um usuário específico
+app.get('/usuario/:userId/ocorrencias', (req, res) => {
+  const { userId } = req.params;
+  
+  const query = `
+    SELECT o.*, l.nome as localidade_nome, u.rm as usuario_rm
+    FROM Ocorrencia o
+    LEFT JOIN users u ON o.usuario_id = u.id
+    WHERE o.usuario_id = ?
+    ORDER BY o.dataOcorrencia DESC
+  `;
+  
+  db.all(query, [userId], (err, rows) => {
+    if (err) {
+      console.error('Erro ao buscar ocorrências do usuário:', err);
+      return res.status(500).json({ error: 'Erro ao buscar ocorrências' });
+    }
+    
+    const ocorrencias = rows.map(row => ({
+      id: row.id,
+      descricao: row.descricao,
+      statusOcorrencia: row.statusOcorrencia,
+      dataOcorrencia: row.dataOcorrencia,
+      localidade_id: row.localidade_id,
+      localidade_nome: row.localidade_nome || `Localidade ${row.localidade_id}`,
+      usuario_id: row.usuario_id,
+      usuario_rm: row.usuario_rm
+    }));
+    
+    res.json(ocorrencias);
+  });
 });
 
 app.listen(PORT, () => {

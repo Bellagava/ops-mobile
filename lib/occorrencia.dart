@@ -82,13 +82,10 @@ class _CriarOcorrenciaPageState extends State<CriarOcorrenciaPage> {
 
     final url = Uri.parse('http://localhost:8080/ocorrencia/save');
     final body = {
-      'usuario': {
-        'id': userId,
-      },
-      'localidade': {
-        'id': localidadeId,
-      },
+      'usuario_id': userId,
+      'localidade_id': localidadeId,
       'descricao': problemaController.text.trim(),
+      'statusOcorrencia': 'Pendente',
     };
 
     try {

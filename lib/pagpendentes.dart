@@ -124,8 +124,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) {
                         final ocorrencia = ocorrencias[index];
                         return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            final resultado = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => VisualizarOcorrenciaPage(
@@ -133,6 +133,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             );
+                            if (resultado == 'deleted') {
+                              setState(() {
+                                _loadOcorrencias();
+                              });
+                            }
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 10.0),

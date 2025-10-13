@@ -108,12 +108,12 @@ class _VisualizarOcorrenciaPageState extends State<VisualizarOcorrenciaPage> {
                       if (resultado == true) await _recarregarOcorrencia();
                     }),
                     const SizedBox(height: 10),
-                    _buildButton('INATIVAR', Colors.red, () {
+                    _buildButton('APAGAR', Colors.red, () {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Inativar Ocorrência'),
-                          content: const Text('Tem certeza que deseja inativar esta ocorrência?'),
+                          title: const Text('Apagar Ocorrência'),
+                          content: const Text('Tem certeza que deseja apagar esta ocorrência?'),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
@@ -122,20 +122,37 @@ class _VisualizarOcorrenciaPageState extends State<VisualizarOcorrenciaPage> {
                             TextButton(
                               onPressed: () async {
                                 try {
-                                  await ocorrenciaService.inativar(ocorrencia.id);
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Ocorrência inativada com sucesso')),
+                                  Navigator.pop(context); // Fecha o dialog primeiro
+                                  
+                                  // Mostra loading
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
                                   );
-                                  await _recarregarOcorrencia();
-                                } catch (e) {
-                                  Navigator.pop(context);
+                                  
+                                  await ocorrenciaService.deletar(ocorrencia.id);
+                                  
+                                  Navigator.pop(context); // Fecha o loading
+                                  Navigator.pop(context, 'deleted'); // Volta para lista
+                                  
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Erro ao inativar: $e')),
+                                    const SnackBar(content: Text('Ocorrência apagada com sucesso')),
+                                  );
+                                } catch (e) {
+                                  Navigator.pop(context); // Fecha o loading se houver erro
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Erro ao apagar: $e'),
+                                      backgroundColor: Colors.red,
+                                      duration: const Duration(seconds: 5),
+                                    ),
                                   );
                                 }
                               },
-                              child: const Text('Inativar', style: TextStyle(color: Colors.red)),
+                              child: const Text('Apagar', style: TextStyle(color: Colors.red)),
                             ),
                           ],
                         ),

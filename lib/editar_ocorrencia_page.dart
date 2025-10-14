@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:criar_telas/vizualizar_ocorrencia.dart';
 import 'package:flutter/material.dart';
 import 'models/ocorrencia_model.dart';
@@ -20,6 +22,9 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
   late TextEditingController _descricaoController;
   late TextEditingController _statusController;
   late TextEditingController _localidadeController;
+  
+  List<dynamic> localidades = [];
+  dynamic localidadeSelecionada;
 
   @override
   void initState() {
@@ -30,6 +35,26 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
         TextEditingController(text: widget.ocorrencia.statusOcorrencia);
     _localidadeController =
         TextEditingController(text: widget.ocorrencia.localidade.nome);
+    
+    carregarLocalidades();
+  }
+
+  Future<void> carregarLocalidades() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:8080/localidade/findAll'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          localidades = data;
+          localidadeSelecionada = localidades.firstWhere(
+            (local) => local['id'] == widget.ocorrencia.localidade.id,
+            orElse: () => null,
+          );
+        });
+      }
+    } catch (e) {
+      // Se falhar, mantém o campo de texto
+    }
   }
 
   @override
@@ -42,13 +67,20 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
 
   Future<void> _salvarAlteracoes() async {
     if (_formKey.currentState!.validate()) {
+      final localidadeParaUsar = localidadeSelecionada != null
+          ? Localidade(
+              id: int.parse(localidadeSelecionada['id'].toString()),
+              nome: localidadeSelecionada['nome'],
+            )
+          : Localidade(
+              id: widget.ocorrencia.localidade.id,
+              nome: _localidadeController.text,
+            );
+
       final ocorrenciaAtualizada = Ocorrencia(
         id: widget.ocorrencia.id,
         usuario: widget.ocorrencia.usuario,
-        localidade: Localidade(
-          id: widget.ocorrencia.localidade.id,
-          nome: _localidadeController.text,
-        ),
+        localidade: localidadeParaUsar,
         dataOcorrencia: widget.ocorrencia.dataOcorrencia,
         descricao: _descricaoController.text,
         statusOcorrencia: _statusController.text,
@@ -74,6 +106,8 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,22 +132,49 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
                       color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
-                TextFormField(
-                  controller: _localidadeController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: 'Ex: Laboratório 1, Sala 201...',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Localidade obrigatória';
-                    }
-                    return null;
-                  },
-                ),
+                localidades.isNotEmpty
+                    ? DropdownButtonFormField<dynamic>(
+                        value: localidadeSelecionada,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        items: localidades.map((local) {
+                          return DropdownMenuItem(
+                            value: local,
+                            child: Text(local['nome']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            localidadeSelecionada = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Localidade obrigatória';
+                          }
+                          return null;
+                        },
+                      )
+                    : TextFormField(
+                        controller: _localidadeController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: 'Ex: Laboratório 1, Sala 201...',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Localidade obrigatória';
+                          }
+                          return null;
+                        },
+                      ),
                 const SizedBox(height: 20),
                 const Text(
                   'Descrição do Problema:',

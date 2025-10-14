@@ -82,10 +82,14 @@ class _CriarOcorrenciaPageState extends State<CriarOcorrenciaPage> {
 
     final url = Uri.parse('http://localhost:8080/ocorrencia/save');
     final body = {
-      'usuario_id': userId,
-      'localidade_id': localidadeId,
+      'usuario': {
+        'id': userId
+      },
+      'localidade': {
+        'id': localidadeId
+      },
       'descricao': problemaController.text.trim(),
-      'statusOcorrencia': 'Pendente',
+      'statusOcorrencia': 'PENDENTE',
     };
 
     try {
@@ -108,7 +112,7 @@ class _CriarOcorrenciaPageState extends State<CriarOcorrenciaPage> {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context);
+          Navigator.pop(context, true); // Retorna true indicando sucesso
         }
       } else {
         String errorMsg = 'Erro ${response.statusCode}';

@@ -108,12 +108,12 @@ class _VisualizarOcorrenciaPageState extends State<VisualizarOcorrenciaPage> {
                       if (resultado == true) await _recarregarOcorrencia();
                     }),
                     const SizedBox(height: 10),
-                    _buildButton('APAGAR', Colors.red, () {
+                    _buildButton('INATIVAR', Colors.orange, () {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Apagar Ocorrência'),
-                          content: const Text('Tem certeza que deseja apagar esta ocorrência?'),
+                          title: const Text('Inativar Ocorrência'),
+                          content: const Text('Tem certeza que deseja inativar esta ocorrência?'),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
@@ -133,26 +133,26 @@ class _VisualizarOcorrenciaPageState extends State<VisualizarOcorrenciaPage> {
                                     ),
                                   );
                                   
-                                  await ocorrenciaService.deletar(ocorrencia.id);
+                                  await ocorrenciaService.inativar(ocorrencia.id);
                                   
                                   Navigator.pop(context); // Fecha o loading
-                                  Navigator.pop(context, 'deleted'); // Volta para lista
+                                  Navigator.pop(context, 'inativada'); // Volta para lista
                                   
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Ocorrência apagada com sucesso')),
+                                    const SnackBar(content: Text('Ocorrência inativada com sucesso')),
                                   );
                                 } catch (e) {
                                   Navigator.pop(context); // Fecha o loading se houver erro
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Erro ao apagar: $e'),
+                                      content: Text('Erro ao inativar: $e'),
                                       backgroundColor: Colors.red,
                                       duration: const Duration(seconds: 5),
                                     ),
                                   );
                                 }
                               },
-                              child: const Text('Apagar', style: TextStyle(color: Colors.red)),
+                              child: const Text('Inativar', style: TextStyle(color: Colors.orange)),
                             ),
                           ],
                         ),

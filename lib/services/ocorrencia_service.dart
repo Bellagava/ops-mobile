@@ -60,51 +60,67 @@ class OcorrenciaService {
   }
 
   Future<Ocorrencia> update(int id, Ocorrencia ocorrencia) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/update/$id'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(ocorrencia.toMap()),
-    );
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/$id'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(ocorrencia.toMap()),
+      );
 
-    if (response.statusCode == 201 || response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return Ocorrencia.fromMap(data);
-    } else {
-      throw Exception('Erro ao editar ocorrência');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return Ocorrencia.fromMap(data);
+      } else {
+        throw Exception('Erro ao editar ocorrência: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erro de conexão ao editar ocorrência: $e');
     }
   }
 
   /// Marca uma ocorrência como resolvida via PUT
   Future<void> marcarComoResolvida(int id) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/$id/resolver'),
-      headers: {'Content-Type': 'application/json'},
-    );
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/$id/resolver'),
+        headers: {'Content-Type': 'application/json'},
+      );
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao marcar ocorrência como resolvida');
+      if (response.statusCode != 200) {
+        throw Exception('Erro ao marcar ocorrência como resolvida: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erro de conexão ao marcar como resolvida: $e');
     }
   }
 
   Future<void> inativar(int id) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/$id/inativar'),
-      headers: {'Content-Type': 'application/json'},
-    );
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/$id/inativar'),
+        headers: {'Content-Type': 'application/json'},
+      );
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao marcar ocorrência como resolvida');
+      if (response.statusCode != 200) {
+        throw Exception('Erro ao inativar ocorrência: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erro de conexão ao inativar: $e');
     }
   }
 
   Future<void> deletar(int id) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/$id'),
-      headers: {'Content-Type': 'application/json'},
-    );
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/$id'),
+        headers: {'Content-Type': 'application/json'},
+      );
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Erro ao deletar ocorrência: ${response.statusCode} - ${response.body}');
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception('Erro ao deletar ocorrência: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erro de conexão ao deletar: $e');
     }
   }
 

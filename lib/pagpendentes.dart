@@ -34,10 +34,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadOcorrencias() {
-    final isPending = selectedIndex == 0;
-    _futureOcorrencias = isPending
-        ? _ocorrenciaService.getOcorrenciaPendentes()
-        : _ocorrenciaService.getOcorrenciaSolucionadas();
+    setState(() {
+      final isPending = selectedIndex == 0;
+      _futureOcorrencias = isPending
+          ? _ocorrenciaService.getOcorrenciaPendentes()
+          : _ocorrenciaService.getOcorrenciaSolucionadas();
+    });
   }
 
   @override
@@ -133,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             );
-                            if (resultado == 'deleted') {
+                            if (resultado == 'deleted' || resultado == 'inativada') {
                               setState(() {
                                 _loadOcorrencias();
                               });

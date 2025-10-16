@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'models/ocorrencia_model.dart';
 import 'models/localidade_model.dart';
 import 'services/ocorrencia_service.dart';
+import 'services/localidade_service.dart';
 
 class EditarOcorrenciaPage extends StatefulWidget {
   final Ocorrencia ocorrencia;
@@ -18,13 +19,19 @@ class EditarOcorrenciaPage extends StatefulWidget {
 class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
   final _formKey = GlobalKey<FormState>();
   final OcorrenciaService _service = OcorrenciaService();
+  final LocalidadeService _localidadeService = LocalidadeService();
 
   late TextEditingController _descricaoController;
   late TextEditingController _statusController;
+<<<<<<< HEAD
   late TextEditingController _localidadeController;
   
   List<dynamic> localidades = [];
   dynamic localidadeSelecionada;
+=======
+  List<Localidade> _localidades = [];
+  Localidade? _localidadeSelecionada;
+>>>>>>> 4d926ba (ultima atualização do front)
 
   @override
   void initState() {
@@ -33,6 +40,7 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
         TextEditingController(text: widget.ocorrencia.descricao);
     _statusController =
         TextEditingController(text: widget.ocorrencia.statusOcorrencia);
+<<<<<<< HEAD
     _localidadeController =
         TextEditingController(text: widget.ocorrencia.localidade.nome);
     
@@ -54,6 +62,25 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
       }
     } catch (e) {
       // Se falhar, mantém o campo de texto
+=======
+    _carregarLocalidades();
+  }
+
+  Future<void> _carregarLocalidades() async {
+    try {
+      final localidades = await _localidadeService.getLocalidades();
+      setState(() {
+        _localidades = localidades;
+        _localidadeSelecionada = localidades.firstWhere(
+          (l) => l.id == widget.ocorrencia.localidade.id,
+          orElse: () => localidades.isNotEmpty ? localidades.first : widget.ocorrencia.localidade,
+        );
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao carregar localidades: $e')),
+      );
+>>>>>>> 4d926ba (ultima atualização do front)
     }
   }
 
@@ -61,12 +88,12 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
   void dispose() {
     _descricaoController.dispose();
     _statusController.dispose();
-    _localidadeController.dispose();
     super.dispose();
   }
 
   Future<void> _salvarAlteracoes() async {
     if (_formKey.currentState!.validate()) {
+<<<<<<< HEAD
       final localidadeParaUsar = localidadeSelecionada != null
           ? Localidade(
               id: int.parse(localidadeSelecionada['id'].toString()),
@@ -76,11 +103,23 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
               id: widget.ocorrencia.localidade.id,
               nome: _localidadeController.text,
             );
+=======
+      if (_localidadeSelecionada == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Selecione uma localidade')),
+        );
+        return;
+      }
+>>>>>>> 4d926ba (ultima atualização do front)
 
       final ocorrenciaAtualizada = Ocorrencia(
         id: widget.ocorrencia.id,
         usuario: widget.ocorrencia.usuario,
+<<<<<<< HEAD
         localidade: localidadeParaUsar,
+=======
+        localidade: _localidadeSelecionada!,
+>>>>>>> 4d926ba (ultima atualização do front)
         dataOcorrencia: widget.ocorrencia.dataOcorrencia,
         descricao: _descricaoController.text,
         statusOcorrencia: _statusController.text,
@@ -132,6 +171,7 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
                       color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
+<<<<<<< HEAD
                 localidades.isNotEmpty
                     ? DropdownButtonFormField<dynamic>(
                         value: localidadeSelecionada,
@@ -175,6 +215,35 @@ class _EditarOcorrenciaPageState extends State<EditarOcorrenciaPage> {
                           return null;
                         },
                       ),
+=======
+                DropdownButtonFormField<Localidade>(
+                  value: _localidades.contains(_localidadeSelecionada) ? _localidadeSelecionada : null,
+                  items: _localidades.map((localidade) {
+                    return DropdownMenuItem<Localidade>(
+                      value: localidade,
+                      child: Text(localidade.nome),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _localidadeSelecionada = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: 'Selecione uma localidade',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Localidade obrigatória';
+                    }
+                    return null;
+                  },
+                ),
+>>>>>>> 4d926ba (ultima atualização do front)
                 const SizedBox(height: 20),
                 const Text(
                   'Descrição do Problema:',

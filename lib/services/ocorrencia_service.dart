@@ -5,25 +5,29 @@ import 'package:criar_telas/models/ocorrencia_model.dart';
 class OcorrenciaService {
   final String baseUrl = 'http://localhost:8080/ocorrencia';
 
-  /// Busca ocorrências pendentes
-  Future<List<Ocorrencia>> getOcorrenciaPendentes() async {
+  /// Busca ocorrências pendentes do usuário logado
+  Future<List<Ocorrencia>> getOcorrenciaPendentesPorUsuario(int userId) async {
     final response = await http.get(Uri.parse('$baseUrl/pendentes'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((e) => Ocorrencia.fromMap(e)).toList();
+      return data.map((e) => Ocorrencia.fromMap(e))
+          .where((ocorrencia) => ocorrencia.usuario.id == userId)
+          .toList();
     } else {
       throw Exception('Erro ao carregar ocorrências pendentes');
     }
   }
 
-  /// Busca ocorrências solucionadas
-  Future<List<Ocorrencia>> getOcorrenciaSolucionadas() async {
+  /// Busca ocorrências solucionadas do usuário logado
+  Future<List<Ocorrencia>> getOcorrenciasSolucionadasPorUsuario(int userId) async {
     final response = await http.get(Uri.parse('$baseUrl/solucionadas'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((e) => Ocorrencia.fromMap(e)).toList();
+      return data.map((e) => Ocorrencia.fromMap(e))
+          .where((ocorrencia) => ocorrencia.usuario.id == userId)
+          .toList();
     } else {
       throw Exception('Erro ao carregar ocorrências solucionadas');
     }

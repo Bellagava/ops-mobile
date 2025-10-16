@@ -17,29 +17,43 @@ class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
   final OcorrenciaService _ocorrenciaService = OcorrenciaService();
   String? userRm;
-  late Future<List<Ocorrencia>> _futureOcorrencias;
+  int? userId;
+  Future<List<Ocorrencia>>? _futureOcorrencias;
 
   @override
   void initState() {
     super.initState();
     _loadUserRm();
-    _loadOcorrencias();
   }
 
   Future<void> _loadUserRm() async {
     final rm = await AuthService.getCurrentUserRm();
+    final id = await AuthService.getCurrentUserId();
     setState(() {
       userRm = rm;
+      userId = id;
+      if (id != null) {
+        _loadOcorrencias();
+      }
     });
   }
 
   void _loadOcorrencias() {
+<<<<<<< HEAD
     setState(() {
       final isPending = selectedIndex == 0;
       _futureOcorrencias = isPending
           ? _ocorrenciaService.getOcorrenciaPendentes()
           : _ocorrenciaService.getOcorrenciaSolucionadas();
     });
+=======
+    if (userId == null) return;
+    
+    final isPending = selectedIndex == 0;
+    _futureOcorrencias = isPending
+        ? _ocorrenciaService.getOcorrenciaPendentesPorUsuario(userId!)
+        : _ocorrenciaService.getOcorrenciasSolucionadasPorUsuario(userId!);
+>>>>>>> 4d926ba (ultima atualização do front)
   }
 
   @override
@@ -93,8 +107,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: FutureBuilder<List<Ocorrencia>>(
-                  future: _futureOcorrencias,
+                child: _futureOcorrencias == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : FutureBuilder<List<Ocorrencia>>(
+                  future: _futureOcorrencias!,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
